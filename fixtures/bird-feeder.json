@@ -1,0 +1,196 @@
+{
+  "schemaVersion": 1,
+  "title": "Example: bird feeder",
+  "nodes": [
+    {
+      "id": "feeder",
+      "title": "Build a bird feeder",
+      "subtitle": "The goal · the centre",
+      "body": "The project everything else hangs off.",
+      "color": "ink",
+      "size": "xl",
+      "dimmed": false,
+      "shape": "circle",
+      "emoji": "",
+      "image": "",
+      "kind": "centre",
+      "provenance": null,
+      "x": 470,
+      "y": 300
+    },
+    {
+      "id": "design",
+      "title": "Sketch a design",
+      "subtitle": "First step",
+      "body": "Circle nodes take a colour and a size.",
+      "color": "ochre",
+      "size": "md",
+      "dimmed": false,
+      "shape": "circle",
+      "emoji": "",
+      "image": "",
+      "kind": "",
+      "provenance": null,
+      "x": 170,
+      "y": 190
+    },
+    {
+      "id": "wood",
+      "title": "Offcut wood",
+      "subtitle": "Materials",
+      "body": "Emoji nodes show the emoji large with the title underneath.",
+      "color": "paper",
+      "size": "md",
+      "dimmed": false,
+      "shape": "emoji",
+      "emoji": "🪵",
+      "image": "",
+      "kind": "",
+      "provenance": null,
+      "x": 170,
+      "y": 430
+    },
+    {
+      "id": "tools",
+      "title": "Saw, drill, screws",
+      "subtitle": "Tools",
+      "body": "",
+      "color": "paper",
+      "size": "md",
+      "dimmed": false,
+      "shape": "emoji",
+      "emoji": "🔨",
+      "image": "",
+      "kind": "",
+      "provenance": null,
+      "x": 790,
+      "y": 190
+    },
+    {
+      "id": "spot",
+      "title": "Find a spot",
+      "subtitle": "Near a window",
+      "body": "",
+      "color": "teal",
+      "size": "md",
+      "dimmed": false,
+      "shape": "circle",
+      "emoji": "",
+      "image": "",
+      "kind": "",
+      "provenance": null,
+      "x": 790,
+      "y": 430
+    },
+    {
+      "id": "squirrels",
+      "title": "Squirrel-proof roof",
+      "subtitle": "Maybe later",
+      "body": "Greyed-out nodes mark ideas that were parked or cut.",
+      "color": "vermilion",
+      "size": "sm",
+      "dimmed": true,
+      "shape": "circle",
+      "emoji": "",
+      "image": "",
+      "kind": "",
+      "provenance": null,
+      "x": 470,
+      "y": 600
+    }
+  ],
+  "edges": [
+    {
+      "id": "e-design-feeder",
+      "from": "design",
+      "to": "feeder",
+      "label": "shapes",
+      "style": "solid",
+      "arrow": "forward"
+    },
+    {
+      "id": "e-wood-feeder",
+      "from": "wood",
+      "to": "feeder",
+      "label": "made from",
+      "style": "solid",
+      "arrow": "forward"
+    },
+    {
+      "id": "e-tools-feeder",
+      "from": "tools",
+      "to": "feeder",
+      "label": "needs",
+      "style": "solid",
+      "arrow": "forward"
+    },
+    {
+      "id": "e-feeder-spot",
+      "from": "feeder",
+      "to": "spot",
+      "label": "goes",
+      "style": "solid",
+      "arrow": "forward"
+    },
+    {
+      "id": "e-feeder-squirrels",
+      "from": "feeder",
+      "to": "squirrels",
+      "label": "could add",
+      "style": "dashed",
+      "arrow": "forward"
+    },
+    {
+      "id": "e-wood-tools",
+      "from": "wood",
+      "to": "tools",
+      "label": "",
+      "style": "solid",
+      "arrow": "both"
+    }
+  ],
+  "legend": {
+    "color:ink": "The goal",
+    "color:ochre": "Planning",
+    "color:teal": "Placement",
+    "color:vermilion": "Nice-to-have",
+    "size:xl": "Centre of the project",
+    "dimmed": "Parked for now",
+    "edge:dashed": "Optional",
+    "arrow:both": "Used together"
+  },
+  "work": [
+    {
+      "id": "w-measure",
+      "nodeId": "spot",
+      "title": "Watch the window for a week",
+      "kind": "observation",
+      "status": "done",
+      "outcome": "Blue tits come before 8am; the left side gets the least wind.",
+      "link": ""
+    },
+    {
+      "id": "w-cut",
+      "nodeId": "wood",
+      "title": "Cut the panels",
+      "kind": "task",
+      "status": "doing",
+      "outcome": "",
+      "link": ""
+    }
+  ],
+  "artifacts": [],
+  "narratives": [
+    {
+      "id": "n-weekend",
+      "name": "Weekend build",
+      "nodeIds": [
+        "feeder",
+        "design",
+        "wood",
+        "tools",
+        "spot"
+      ]
+    }
+  ]
+}

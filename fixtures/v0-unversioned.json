@@ -1,0 +1,47 @@
+{
+  "title": "Old export (unversioned)",
+  "nodes": [
+    {
+      "id": "a",
+      "title": "An idea",
+      "subtitle": "",
+      "body": "",
+      "color": "teal",
+      "size": "md",
+      "dimmed": false,
+      "kind": "emoji",
+      "emoji": "💡",
+      "x": 0,
+      "y": 0
+    },
+    {
+      "id": "b",
+      "title": "Another",
+      "subtitle": "",
+      "body": "",
+      "color": "paper",
+      "size": "md",
+      "dimmed": false,
+      "x": 200,
+      "y": 0
+    }
+  ],
+  "edges": [
+    {
+      "id": "ab",
+      "from": "a",
+      "to": "b",
+      "label": "leads to",
+      "style": "solid",
+      "arrow": "forward"
+    },
+    {
+      "id": "dangling",
+      "from": "a",
+      "to": "missing",
+      "label": "",
+      "style": "solid",
+      "arrow": "forward"
+    }
+  ]
+}

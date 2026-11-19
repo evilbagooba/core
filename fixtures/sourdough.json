@@ -1,0 +1,213 @@
+{
+  "schemaVersion": 1,
+  "title": "Why is my sourdough flat?",
+  "nodes": [
+    {
+      "id": "q",
+      "title": "Flat loaves",
+      "subtitle": "The question · the centre",
+      "body": "Three bakes in a row spread instead of rising. Find out why before changing everything at once.",
+      "color": "ink",
+      "size": "xl",
+      "dimmed": false,
+      "shape": "circle",
+      "emoji": "",
+      "image": "",
+      "kind": "centre",
+      "provenance": null,
+      "x": 0,
+      "y": 0
+    },
+    {
+      "id": "temp",
+      "title": "Kitchen is too cold",
+      "subtitle": "Main hypothesis",
+      "body": "Winter kitchen sits around 17 °C; recipes assume 24 °C. Fermentation would run slow and the dough would be under-proofed.",
+      "color": "teal",
+      "size": "md",
+      "dimmed": false,
+      "shape": "circle",
+      "emoji": "",
+      "image": "",
+      "kind": "claim",
+      "provenance": {
+        "source": "note",
+        "ref": "baking diary, 3 Nov"
+      },
+      "x": -260,
+      "y": -140
+    },
+    {
+      "id": "starter",
+      "title": "Starter is weak",
+      "subtitle": "Rival explanation",
+      "body": "If the starter doesn't double in 6 hours, temperature isn't the whole story.",
+      "color": "ochre",
+      "size": "md",
+      "dimmed": false,
+      "shape": "circle",
+      "emoji": "",
+      "image": "",
+      "kind": "foil",
+      "provenance": null,
+      "x": 260,
+      "y": -140
+    },
+    {
+      "id": "flour",
+      "title": "Switched flour brand",
+      "subtitle": "Confound",
+      "body": "Changed flour the same week the loaves went flat.",
+      "color": "vermilion",
+      "size": "md",
+      "dimmed": true,
+      "shape": "circle",
+      "emoji": "",
+      "image": "",
+      "kind": "foil",
+      "provenance": null,
+      "x": 260,
+      "y": 160
+    },
+    {
+      "id": "proof",
+      "title": "Proof somewhere warmer",
+      "subtitle": "What to try",
+      "body": "Oven with the light on holds about 25 °C.",
+      "color": "paper",
+      "size": "md",
+      "dimmed": false,
+      "shape": "circle",
+      "emoji": "",
+      "image": "",
+      "kind": "action",
+      "provenance": null,
+      "x": -260,
+      "y": 160
+    },
+    {
+      "id": "evidence",
+      "title": "Warm proof doubled in 4 h",
+      "subtitle": "Evidence",
+      "body": "Same starter, same flour: the warm batch doubled in 4 hours, the counter batch in 9.",
+      "color": "sage",
+      "size": "md",
+      "dimmed": false,
+      "shape": "circle",
+      "emoji": "",
+      "image": "",
+      "kind": "evidence",
+      "provenance": null,
+      "x": -520,
+      "y": 0
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "temp",
+      "to": "q",
+      "label": "explains?",
+      "style": "solid",
+      "arrow": "forward"
+    },
+    {
+      "id": "e2",
+      "from": "starter",
+      "to": "q",
+      "label": "explains?",
+      "style": "dashed",
+      "arrow": "forward"
+    },
+    {
+      "id": "e3",
+      "from": "flour",
+      "to": "q",
+      "label": "confounds",
+      "style": "dashed",
+      "arrow": "forward"
+    },
+    {
+      "id": "e4",
+      "from": "proof",
+      "to": "temp",
+      "label": "tests",
+      "style": "solid",
+      "arrow": "forward"
+    },
+    {
+      "id": "e5",
+      "from": "evidence",
+      "to": "temp",
+      "label": "supports",
+      "style": "solid",
+      "arrow": "forward"
+    }
+  ],
+  "legend": {
+    "color:teal": "Hypothesis",
+    "color:ochre": "Rival explanation",
+    "dimmed": "Ruled out for now",
+    "edge:dashed": "Untested link"
+  },
+  "work": [
+    {
+      "id": "w1",
+      "nodeId": "proof",
+      "title": "Side-by-side proof: oven light vs counter",
+      "kind": "experiment",
+      "status": "done",
+      "outcome": "Warm proof doubled in 4 h, counter in 9 h. Temperature explains most of it.",
+      "link": "https://example.com/bake-log/side-by-side"
+    },
+    {
+      "id": "w2",
+      "nodeId": "starter",
+      "title": "Time the starter doubling at 24 °C",
+      "kind": "experiment",
+      "status": "todo",
+      "outcome": "",
+      "link": ""
+    },
+    {
+      "id": "w3",
+      "nodeId": "flour",
+      "title": "Bake one loaf with the old flour",
+      "kind": "experiment",
+      "status": "doing",
+      "outcome": "",
+      "link": ""
+    }
+  ],
+  "artifacts": [
+    {
+      "id": "a1",
+      "nodeId": "evidence",
+      "workId": "w1",
+      "title": "Photo: both jars after 4 hours",
+      "kind": "image",
+      "link": "https://example.com/bake-log/jars.jpg"
+    }
+  ],
+  "narratives": [
+    {
+      "id": "n-friend",
+      "name": "Explaining it to a friend",
+      "nodeIds": [
+        "q",
+        "temp",
+        "proof",
+        "evidence"
+      ]
+    },
+    {
+      "id": "n-open",
+      "name": "What's still open",
+      "nodeIds": [
+        "q",
+        "starter",
+        "flour"
+      ]
+    }
+  ]
+}
