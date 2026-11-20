@@ -1,6 +1,6 @@
 {
   "name": "tako",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "The tako project format, its operations layer, and the hub that lets the graph / work / slides / chat tools share projects.",
   "type": "module",
   "engines": {

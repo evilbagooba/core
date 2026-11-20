@@ -2,7 +2,7 @@
 // to it the way the tools do.
 
 import assert from "node:assert/strict";
-import { existsSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
 import type { AddressInfo } from "node:net";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -233,6 +233,92 @@ describe("hub", () => {
     });
     assert.equal(status, 403);
     await assert.rejects(a.get("../secrets"), /valid project id|Not found|No project/);
+  });
+});
+
+describe("tools", () => {
+  const manifest = { id: "demo", name: "tako-demo", title: "Demo tool", tagline: "Shows how tools plug in", opens: ["project", "node"], version: "1.2.3" };
+  /** A built page, as a tool's release would contain it. */
+  function builtPage(m: Record<string, unknown> = manifest) {
+    const built = mkdtempSync(join(tmpdir(), "tako-tool-"));
+    mkdirSync(join(built, "dist", "assets"), { recursive: true });
+    writeFileSync(join(built, "dist", "index.html"), "<!doctype html><title>demo</title>");
+    writeFileSync(join(built, "dist", "assets", "app.js"), "console.log('demo')");
+    writeFileSync(join(built, "dist", "tako.tool.json"), JSON.stringify(m));
+    return built;
+  }
+
+  it("installs a built page and serves it, knowing only its manifest", async () => {
+    assert.deepEqual(await a.tools(), []);
+    const built = builtPage();
+    const installed = hubServer.tools.addFromDir(built);
+    assert.equal(installed.id, "demo");
+    rmSync(built, { recursive: true, force: true });
+
+    const [tool] = await a.tools();
+    assert.deepEqual(tool, { ...manifest, url: `${url}/demo/`, dev: false });
+
+    const page = await fetch(`${url}/demo/`);
+    assert.equal(page.status, 200);
+    assert.match(page.headers.get("content-type")!, /text\/html/);
+    assert.match(await page.text(), /<title>demo/);
+    const js = await fetch(`${url}/demo/assets/app.js`);
+    assert.match(js.headers.get("content-type")!, /javascript/);
+    const bare = await fetch(`${url}/demo`, { redirect: "manual" });
+    assert.equal(bare.status, 301);
+    assert.equal(bare.headers.get("location"), "/demo/");
+  });
+
+  it("never serves a file outside the tool's folder", async () => {
+    for (const path of ["/demo/..%2f..%2fa-fresh-idea.tako.json", "/demo/%2e%2e/%2e%2e/a-fresh-idea.tako.json", "/demo//etc/passwd", "/nope/"]) {
+      const res = await fetch(`${url}${path}`);
+      assert.equal(res.status, 404, path);
+    }
+  });
+
+  it("refuses a page with no manifest, or a bad one", () => {
+    const empty = mkdtempSync(join(tmpdir(), "tako-tool-"));
+    assert.throws(() => hubServer.tools.addFromDir(empty), /No built tool found/);
+    const bad = builtPage({ ...manifest, id: "api" });
+    assert.throws(() => hubServer.tools.addFromDir(bad), /isn't valid/);
+    rmSync(empty, { recursive: true, force: true });
+    rmSync(bad, { recursive: true, force: true });
+  });
+
+  it("builds links that carry only what the tool can open", async () => {
+    const [tool] = await a.tools();
+    const link = new URL(a.linkTo(tool!, { project: "my-project", node: "n1", work: "w1" }));
+    assert.equal(link.pathname, "/demo/");
+    assert.equal(link.searchParams.get("project"), "my-project");
+    assert.equal(link.searchParams.get("node"), "n1");
+    assert.equal(link.searchParams.get("work"), null, "this tool didn't say it opens work items");
+    assert.equal(link.searchParams.get("hub"), null, "a tool served by the hub finds it at its own origin");
+  });
+
+  it("lists a tool that announces itself, in place of the installed copy", async () => {
+    const post = (body: unknown) =>
+      fetch(`${url}/api/tools/announce`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body) });
+    assert.equal((await post({ manifest, url: "http://localhost:5173/" })).status, 200);
+    const [tool, ...rest] = await a.tools();
+    assert.equal(rest.length, 0);
+    assert.equal(tool!.url, "http://localhost:5173/");
+    assert.equal(tool!.dev, true);
+    // Not served by this hub, and the hub isn't at the default address: the link says where the hub is.
+    assert.equal(new URL(a.linkTo(tool!, { project: "p" })).searchParams.get("hub"), url);
+    assert.equal((await post({ manifest, url: "https://example.com/" })).status, 422, "only localhost tools can announce");
+    assert.equal((await post({ manifest: { id: "x" }, url: "http://localhost:1/" })).status, 422);
+  });
+
+  it("removes an installed tool", async () => {
+    assert.equal(hubServer.tools.remove("demo"), true);
+    assert.equal((await fetch(`${url}/demo/`)).status, 404);
+    assert.equal(hubServer.tools.remove("demo"), false);
+  });
+
+  it("serves a home page", async () => {
+    const res = await fetch(`${url}/`);
+    assert.equal(res.status, 200);
+    assert.match(await res.text(), /<title>tako<\/title>/);
   });
 });
 

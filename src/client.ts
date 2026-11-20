@@ -32,7 +32,32 @@ export type ProjectSummary = {
 /** A project as the hub holds it. `rev` changes whenever the file does. */
 export type HubDoc = { id: string; rev: string; project: Project; canUndo: boolean; canRedo: boolean };
 
-export type HubEvent = { type: "project"; id: string; rev: string } | { type: "list" } | { type: "resync" };
+export type HubEvent =
+  | { type: "project"; id: string; rev: string }
+  | { type: "list" }
+  /** The set of reachable tools changed. */
+  | { type: "tools" }
+  | { type: "resync" };
+
+/** How a tool describes itself (`tako.tool.json` at the root of its page).
+ * This is all the hub, or any other tool, knows about it. */
+export type ToolManifest = {
+  /** Short and URL-safe; an installed tool is served at `/<id>/`. */
+  id: string;
+  name: string;
+  /** What it is, in a word or two: "Work board". */
+  title: string;
+  tagline: string;
+  /** What a link can point it at. */
+  opens: ("project" | "node" | "work")[];
+  version: string;
+};
+
+/** A tool that's reachable right now. */
+export type ToolInfo = ToolManifest & { url: string; /** Announced by a running dev copy. */ dev: boolean };
+
+/** What a link into another tool points at. */
+export type LinkTarget = { project: string; node?: string; work?: string };
 
 export class HubError extends Error {
   constructor(
@@ -68,7 +93,41 @@ export type Hub = {
   open(id: string, opts?: OpenOptions): Promise<ProjectStore>;
   /** Hear about changes to any project, or to the list of projects. */
   onEvent(listener: (e: HubEvent) => void): () => void;
+  /** Every tool reachable right now (installed in the hub, or running and
+   * announced), this one included. */
+  tools(): Promise<ToolInfo[]>;
+  /** An address that opens `target` in `tool`. Only what the tool says it
+   * can open is passed along. */
+  linkTo(tool: ToolInfo, target: LinkTarget): string;
 };
+
+/** The page's address, where there is a page (no DOM types here: this
+ * module also runs in Node). */
+const pageLocation = () =>
+  (globalThis as { location?: { search: string; origin: string; pathname: string; protocol: string } }).location;
+
+/** What a link into this page asked for (`?project=…&node=…&work=…`). */
+export function linkTarget(search: string = pageLocation()?.search ?? ""): Partial<LinkTarget> {
+  const q = new URLSearchParams(search);
+  const get = (k: string) => q.get(k) || undefined;
+  return { project: get("project"), node: get("node"), work: get("work") };
+}
+
+/**
+ * Find the hub for this page: `?hub=<url>` if given, else the page's own
+ * origin (a tool installed in the hub is served by it), else the default
+ * address. Null when none answers.
+ */
+export async function findHub(opts: { tool?: ToolManifest; timeoutMs?: number } = {}): Promise<Hub | null> {
+  const loc = pageLocation();
+  const asked = loc ? new URLSearchParams(loc.search).get("hub") : null;
+  const candidates = asked ? [asked] : [...(loc && /^https?:$/.test(loc.protocol) ? [loc.origin] : []), DEFAULT_HUB];
+  for (const url of [...new Set(candidates)]) {
+    const hub = await connectHub(url, opts);
+    if (hub) return hub;
+  }
+  return null;
+}
 
 type EventSourceLike = {
   onmessage: ((e: { data: string }) => void) | null;
@@ -80,7 +139,7 @@ type EventSourceLike = {
  * signal to fall back to opening a file. */
 export async function connectHub(
   url: string = DEFAULT_HUB,
-  opts: { timeoutMs?: number; clientName?: string } = {},
+  opts: { timeoutMs?: number; clientName?: string; tool?: ToolManifest } = {},
 ): Promise<Hub | null> {
   const base = url.replace(/\/+$/, "");
   let health: { name?: string; version?: string; dir?: string };
@@ -89,12 +148,12 @@ export async function connectHub(
     if (!res.ok) return null;
     health = (await res.json()) as typeof health;
   } catch {
-    return null;
+    return null; // nothing there, or something that isn't a hub
   }
   if (health.name !== "tako") return null;
 
   const clientId = Math.random().toString(36).slice(2, 10);
-  const via = opts.clientName ?? "";
+  const via = opts.clientName ?? opts.tool?.name ?? "";
 
   async function call<T>(path: string, init?: { method?: string; body?: unknown }): Promise<T> {
     const res = await fetch(`${base}${path}`, {
@@ -156,7 +215,28 @@ export async function connectHub(
     checkOps: async (raw) => (await call<{ ops: Op[] }>("/api/check-ops", { method: "POST", body: { ops: raw } })).ops,
     open: async (id, o) => createHubStore(await hub.get(id), o ?? {}),
     onEvent,
+    tools: async () => (await call<{ tools: ToolInfo[] }>("/api/tools")).tools,
+    linkTo(tool, target) {
+      const url = new URL(tool.url);
+      url.searchParams.set("project", target.project);
+      if (target.node && tool.opens.includes("node")) url.searchParams.set("node", target.node);
+      if (target.work && tool.opens.includes("work")) url.searchParams.set("work", target.work);
+      // A tool not served by this hub has to be told where the hub is,
+      // unless it would find it at the default address anyway.
+      if (url.origin !== base && base !== DEFAULT_HUB) url.searchParams.set("hub", base);
+      return url.href;
+    },
   };
+
+  // A tool running outside the hub (a dev server) says where it is, and
+  // keeps saying so; the hub forgets tools that go quiet.
+  const loc = pageLocation();
+  if (opts.tool && loc && loc.origin !== base) {
+    const here = `${loc.origin}${loc.pathname}`;
+    const announce = () => void call("/api/tools/announce", { method: "POST", body: { manifest: opts.tool, url: here } }).catch(() => {});
+    announce();
+    setInterval(announce, 30_000);
+  }
 
   type Batch = { ops: Op[]; coalesceKey?: string };
 
@@ -319,7 +399,7 @@ export async function connectHub(
 
     const off = onEvent((e) => {
       if (closed) return;
-      if (e.type === "list" || (e.type === "project" && (e.id !== server.id || e.rev === server.rev))) return;
+      if (e.type === "list" || e.type === "tools" || (e.type === "project" && (e.id !== server.id || e.rev === server.rev))) return;
       stale = true;
       schedule(0);
     });
