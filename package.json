@@ -1,7 +1,7 @@
 {
-  "name": "core",
-  "version": "0.1.0",
-  "description": "The project file format, operations layer and undo history shared by the graph / work / slides / chat tools.",
+  "name": "tako",
+  "version": "0.2.0",
+  "description": "The tako project format, its operations layer, and the hub that lets the graph / work / slides / chat tools share projects.",
   "type": "module",
   "engines": {
     "node": ">=20.11"
@@ -10,13 +10,17 @@
     ".": "./src/index.ts",
     "./model": "./src/model.ts",
     "./schema": "./src/schema.ts",
+    "./client": "./src/client.ts",
+    "./hub": "./src/hub/server.ts",
     "./fixtures/*": "./fixtures/*"
   },
   "files": [
     "src",
-    "fixtures"
+    "fixtures",
+    "bin"
   ],
   "scripts": {
+    "start": "node bin/tako.mjs",
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "test": "node --import tsx --test test/*.test.ts"
   },
@@ -25,8 +29,13 @@
   },
   "devDependencies": {
     "@types/node": "^24.0.0",
-    "tsx": "^4.20.6",
     "typescript": "5.6.3",
     "zod": "^4.6.7"
+  },
+  "bin": {
+    "tako": "./bin/tako.mjs"
+  },
+  "dependencies": {
+    "tsx": "^4.20.6"
   }
 }

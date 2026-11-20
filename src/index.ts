@@ -1,4 +1,4 @@
-// Graph Builder core: the project file format, its operations layer and
+// tako: the project file format, its operations layer and
 // undo history. Framework-free (no React, no DOM) so it can become a
 // standalone package that every tool in the suite pins.
 //

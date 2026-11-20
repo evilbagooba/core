@@ -6,3 +6,4 @@ export * from "./project";
 export * from "./ops";
 export * from "./history";
 export * from "./describe";
+export * from "./store";
